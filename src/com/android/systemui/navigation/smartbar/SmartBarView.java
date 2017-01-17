@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2016 The DirtyUnicorns Project
  * Copyright (C) 2014 SlimRoms
- * 
+ *
  * @author: Randall Rushing <randall.rushing@gmail.com>
  *
  * Much love and respect to SlimRoms for writing and inspiring
@@ -18,7 +18,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * A new software key based navigation implementation that just vaporizes
  * AOSP and quite frankly everything currently on the custom firmware scene
  *
@@ -36,6 +36,7 @@ import android.net.Uri;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -87,6 +88,7 @@ public class SmartBarView extends BaseNavigationBar {
         sUris.add(Settings.Secure.getUriFor("smartbar_ime_hint_mode"));
         sUris.add(Settings.Secure.getUriFor("smartbar_button_animation_style"));
         sUris.add(Settings.Secure.getUriFor(Settings.Secure.NAVBAR_BUTTONS_ALPHA));
+        sUris.add(Settings.Secure.getUriFor(Settings.Secure.ONE_HANDED_MODE_UI));
     }
 
     private SmartObservable mObservable = new SmartObservable() {
@@ -106,6 +108,8 @@ public class SmartBarView extends BaseNavigationBar {
                 updateAnimationStyle();
             } else if (uri.equals(Settings.Secure.getUriFor(Settings.Secure.NAVBAR_BUTTONS_ALPHA))) {
                 updateButtonAlpha();
+            } else if (uri.equals(Settings.Secure.getUriFor(Settings.Secure.ONE_HANDED_MODE_UI))) {
+                updateOneHandedModeSetting();
             }
         }
     };
@@ -119,6 +123,7 @@ public class SmartBarView extends BaseNavigationBar {
     // hold a reference to primary buttons in order of appearance on screen
     private ArrayList<String> mCurrentSequence = new ArrayList<String>();
     private View mContextRight, mContextLeft, mCurrentContext;
+    private boolean isOneHandedModeEnabled;
     private boolean mHasLeftContext;
     private int mImeHintMode;
     private int mButtonAnimationStyle;
@@ -139,8 +144,18 @@ public class SmartBarView extends BaseNavigationBar {
     }
 
     @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (isOneHandedModeEnabled) {
+            mSlideTouchEvent.handleTouchEvent(event);
+        }
+        return super.onTouchEvent(event);
+    }
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        mSlideTouchEvent.handleTouchEvent(event);
+        if (isOneHandedModeEnabled) {
+            mSlideTouchEvent.handleTouchEvent(event);
+        }
         return super.onInterceptTouchEvent(event);
     }
 
@@ -158,6 +173,7 @@ public class SmartBarView extends BaseNavigationBar {
         recreateLayouts();
         updateImeHintModeSettings();
         updateContextLayoutSettings();
+        updateOneHandedModeSetting();
     }
 
     @Override
@@ -508,6 +524,11 @@ public class SmartBarView extends BaseNavigationBar {
         getHiddenContext().findViewWithTag(Res.Softkey.MENU_BUTTON).setVisibility(INVISIBLE);
         getHiddenContext().findViewWithTag(Res.Softkey.IME_SWITCHER).setVisibility(INVISIBLE);
         setNavigationIconHints(mNavigationIconHints, true);
+    }
+
+    private void updateOneHandedModeSetting() {
+        isOneHandedModeEnabled = Settings.Secure.getIntForUser(getContext().getContentResolver(),
+                Settings.Secure.ONE_HANDED_MODE_UI, 0, UserHandle.USER_CURRENT) == 1;
     }
 
     void recreateButtonLayout(ArrayList<ButtonConfig> buttonConfigs, boolean landscape,
