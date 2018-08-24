@@ -237,6 +237,15 @@ public class FlingLogoController implements SmartObservable {
         hiddenLogo.setImageDrawable(getCurrentDrawable());
         updateButtonScalingAndPadding(currentLogo, mLogoConfig, mHost.isLandscape());
         updateButtonScalingAndPadding(hiddenLogo, mLogoConfig, !mHost.isLandscape());
+
+        ImageView currentRotationLogo = (ImageView)current.findViewById(R.id.rotationLogo);
+        ImageView hiddenRotationLogo = (ImageView)hidden.findViewById(R.id.rotationLogo);
+        currentRotationLogo.setImageDrawable(null);
+        currentRotationLogo.setImageDrawable(getCurrentRotationDrawable());
+        hiddenRotationLogo.setImageDrawable(null);
+        hiddenRotationLogo.setImageDrawable(getCurrentRotationDrawable());
+        updateButtonScalingAndPadding(currentRotationLogo, mLogoConfig, mHost.isLandscape());
+        updateButtonScalingAndPadding(hiddenRotationLogo, mLogoConfig, !mHost.isLandscape());
     }
 
     Drawable getCurrentDrawable() {
@@ -249,10 +258,38 @@ public class FlingLogoController implements SmartObservable {
             }
         }
 
-        Drawable light = mHost.mResourceMap.mFlingLogo;
-        Drawable dark = mHost.mResourceMap.mFlingLogoDark;
+        light = mHost.mResourceMap.mFlingLogo;
+        dark = mHost.mResourceMap.mFlingLogoDark;
+        d = KeyButtonDrawable.create(light, dark);
+        return d;
+    }
+
+    Drawable getCurrentRotationDrawable() {
+        Drawable light = mHost.mResourceMap.mFlingRotationLogo;
+        Drawable dark = mHost.mResourceMap.mFlingRotationLogoDark;
         KeyButtonDrawable d = KeyButtonDrawable.create(light, dark);
         return d;
+    }
+
+    // Helper to flatten AdaptiveIconDrawable layers to a single drawable
+    private static BitmapDrawable getBitmapDrawable(Context ctx, Drawable d) {
+        if (d instanceof BitmapDrawable) {
+            return (BitmapDrawable) d;
+        }
+        final Canvas canvas = new Canvas();
+        canvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.ANTI_ALIAS_FLAG,
+                Paint.FILTER_BITMAP_FLAG));
+
+        Bitmap bmResult = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(),
+                Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bmResult);
+        d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        d.draw(canvas);
+        return new BitmapDrawable(ctx.getResources(), bmResult);
+    }
+
+    private Drawable getConfigCustomIcon() {
+        return mLogoConfig.getActionConfig(ActionConfig.PRIMARY).getCurrentCustomIcon(mContext);
     }
 
     public static AnimationSet getSpinAnimation(int mode) {

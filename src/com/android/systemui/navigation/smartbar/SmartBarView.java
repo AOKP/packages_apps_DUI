@@ -56,7 +56,6 @@ import com.android.internal.utils.du.DUActionUtils;
 import com.android.internal.utils.du.Config;
 import com.android.internal.utils.du.Config.ActionConfig;
 import com.android.internal.utils.du.Config.ButtonConfig;
-import com.android.systemui.Dependency;
 import com.android.systemui.navigation.BaseEditor;
 import com.android.systemui.navigation.BaseNavigationBar;
 import com.android.systemui.navigation.Editor;
@@ -74,7 +73,6 @@ import com.android.systemui.navigation.utils.SmartObserver.SmartObservable;
 import com.android.systemui.statusbar.phone.BarTransitions;
 import com.android.systemui.statusbar.phone.LightBarTransitionsController;
 import com.android.systemui.statusbar.policy.KeyButtonDrawable;
-import com.android.systemui.statusbar.policy.RotationLockController;
 import com.android.systemui.R;
 
 import java.util.ArrayList;
@@ -161,7 +159,6 @@ public class SmartBarView extends BaseNavigationBar {
 
     private boolean mRotateButtonVisible;
     private int mLastRotation = 0;
-    private RotationLockController mRotationLockController;
 
     @Override
     public void onReceive(Intent intent) {
@@ -203,7 +200,7 @@ public class SmartBarView extends BaseNavigationBar {
     }
 
     public void rotate() {
-        mRotationLockController.setRotationLockedAtAngle(true, mLastRotation);
+        getRotationController().setRotationLockedAtAngle(true, mLastRotation);
     }
 
     public SmartBarView(Context context) {
@@ -224,8 +221,6 @@ public class SmartBarView extends BaseNavigationBar {
                 return true;
             }
         });
-
-        mRotationLockController = Dependency.get(RotationLockController.class);
     }
 
     private final OnTouchListener mSmartBarTouchListener = new OnTouchListener() {
