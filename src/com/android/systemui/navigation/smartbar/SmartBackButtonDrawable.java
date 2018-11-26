@@ -20,7 +20,6 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -35,7 +34,6 @@ import com.android.systemui.navigation.smartbar.SmartBackButtonDrawable;
 public class SmartBackButtonDrawable extends LayerDrawable implements DarkIntensity{
     private float mRotation;
     private Animator mCurrentAnimator;
-    private int mIcontint = SmartBarView.updatetint();
 
     private final boolean mHasDarkDrawable;
 
@@ -89,11 +87,6 @@ public class SmartBackButtonDrawable extends LayerDrawable implements DarkIntens
         getDrawable(0).draw(canvas);
         if (mHasDarkDrawable)  {
             getDrawable(1).draw(canvas);
-        }
-        if(mIcontint != -1) {
-            getDrawable(0).setTint(mIcontint);
-        } else {
-            getDrawable(0).setTintList(null);
         }
     }
 
